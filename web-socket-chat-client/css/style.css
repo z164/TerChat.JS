@@ -1,0 +1,98 @@
+@charset "UTF-8";
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #28292B;
+  width: 100vw;
+  height: 100vh;
+  font-family: "Quicksand", sans-serif;
+}
+
+header {
+  padding: 20px;
+}
+header .headline-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  min-width: 300px;
+  min-height: 150px;
+  text-align: center;
+}
+header .headline-wrap h1 {
+  font-size: 4em;
+}
+header .headline-wrap:hover :nth-child(1) {
+  animation: flex 1.5s ease-in-out infinite alternate;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+main .terminal-wrap {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  font-family: "Ubuntu Mono", monospace;
+  min-width: 1000px;
+}
+main .terminal-wrap .terminal-header {
+  background-color: white;
+  color: black;
+  padding: 10px;
+  text-align: center;
+}
+main .terminal-wrap .terminal-content {
+  padding: 10px;
+  background-color: #3F3F3F;
+  height: 400px;
+  overflow-y: scroll;
+}
+main .terminal-wrap .terminal-content .terminal-content-history span {
+  display: block;
+}
+main .terminal-wrap .terminal-content .terminal-content-current {
+  min-width: 100px;
+  caret-color: transparent;
+}
+main .terminal-wrap .terminal-content .terminal-content-current:focus {
+  outline: none;
+}
+main .terminal-wrap .terminal-content .terminal-content-current::before {
+  content: "z164@z164:~$ ";
+}
+main .terminal-wrap .terminal-content .terminal-content-current::after {
+  content: "█";
+  animation: blink 1s step-start infinite reverse;
+}
+
+@keyframes flex {
+  33% {
+    font-size: 4.5em;
+    text-shadow: 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #49ff18, 0 0 30px #49FF18, 0 0 40px #49FF18, 0 0 55px #49FF18, 0 0 75px #49ff18;
+  }
+  66% {
+    font-size: 3.5em;
+    text-shadow: 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #f8e007, 0 0 75px #f8e007, 2px 2px 2px rgba(206, 89, 55, 0);
+  }
+  100% {
+    font-size: 4.5em;
+    text-shadow: 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #e92525, 0 0 30px #e92525, 0 0 40px #e92525, 0 0 55px #e92525, 0 0 75px #e92525;
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0%;
+  }
+}
