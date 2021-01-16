@@ -1,7 +1,7 @@
 const ws = require('ws');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const User = require('./DataBase/User')
+const User = require('./DataBase/User');
 
 dotenv.config();
 
@@ -51,23 +51,25 @@ const parseCommand = (message, ws) => {
 }
 
 const register = (ws, props, body) => {
+    const {email, password, name} = body
     User.create({
-        email: body[0],
-        password: body[1],
-        name: body[2]
+        email: email,
+        password: password,
+        name: name
     }, (err) => {
         if (err) {
             console.error(err);
         } else {
-            ws.send('User created succesfully')
+            ws.send('User created succesfully. Please confirm your email before you can login into your account')
         }
     })
 }
 
 const login = (ws, props, body) => {
+    const {name, password} = body
     User.find({
-        email: body[0],
-        password: body[1]
+        name: name,
+        password: password
     }, (err, res) => {
         if (err) {
             console.error(err)
@@ -79,6 +81,6 @@ const login = (ws, props, body) => {
 
 const all = (ws, props, body) => {
     server.clients.forEach((el) => {
-        el.send(String(body))
+        el.send(body.join(' '))
     })
 }

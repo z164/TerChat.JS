@@ -11,24 +11,35 @@ currentLine.on('blur', () => {
 })
 
 // Connection to server and event listeners
-ws = new WebSocket('ws://localhost:3000')
+let ws
+const connect = (url) => {
+   ws = new WebSocket(url)
+}
+connect('ws://localhost:3000')
+ws.onerror = (err) => {
+    history.append(`<span>Error connecting to ${err.target.url}`)
+}
 ws.onopen = () => {
-
 }
 ws.onmessage = (e) => {
     history.append(`<span>[Server]: ${e.data}`)
     content.scrollTop(999)
 }
-
+// Enter press event listener
 currentLine.on('keypress', function (e) {
     if (e.which == 13) {
         e.preventDefault();
+        // if(currentLine.text()=== 'rs') {
+        //     ws.close()
+        //     connect('ws://localhost:3000')
+        // }
         history.append(`<span>z164@z164:~$ ${currentLine.text().trim()}</span>`)
         toJSON(currentLine.text().trim())
         currentLine.text(' ')
     }
 });
 
+// Convert command in terminal to JSON and send it to server
 const toJSON = (message) => {
     const commandArray = message.split(' ')
     const command = commandArray.shift()
