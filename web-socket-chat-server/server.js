@@ -9,6 +9,11 @@ const server = new ws.Server({
     port: 3000
 })
 
+// Array to differentiate clients
+
+const LoggedClients = []
+
+
 mongoose.connect(process.env.URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -51,7 +56,7 @@ const parseCommand = (message, ws) => {
 }
 
 const register = (ws, props, body) => {
-    const {email, password, name} = body
+    const [email, password, name] = body
     User.create({
         email: email,
         password: password,
@@ -66,21 +71,28 @@ const register = (ws, props, body) => {
 }
 
 const login = (ws, props, body) => {
-    const {name, password} = body
+    const [name, password] = body
     User.find({
         name: name,
         password: password
     }, (err, res) => {
         if (err) {
             console.error(err)
-        } else {
-            console.log(res)
         }
+        LoggedClients.push({
+            socket: ws,
+            data: res[0]
+        })
+        ws.send('Succesfully logged in!')
     })
 }
 
 const all = (ws, props, body) => {
+    const currentUser = LoggedClients.find(el => el.socket === ws)
+    if(!currentUser) {
+        el.send(`Please, use login / register command first!`)
+    }
     server.clients.forEach((el) => {
-        el.send(body.join(' '))
+        el.send(`${currentUser.data.name}: ${body.join(' ')}`)
     })
 }
