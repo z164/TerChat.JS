@@ -13,26 +13,24 @@ currentLine.on('blur', () => {
 // Connection to server and event listeners
 let ws
 const connect = (url) => {
-   ws = new WebSocket(url)
+    ws = new WebSocket(url)
 }
 connect('ws://localhost:3000')
 ws.onerror = (err) => {
     history.append(`<span>Error connecting to ${err.target.url}`)
 }
-ws.onopen = () => {
-}
+ws.onopen = () => {}
 ws.onmessage = (e) => {
-    history.append(`<span>[Server]: ${e.data}`)
+    const message = e.data
+    const [body, author] = parseMessage(message)
+    history.append(`<span>${author === '' ? 'Server' : author}: ${body}</span>`)
     content.scrollTop(999)
 }
+
 // Enter press event listener
 currentLine.on('keypress', function (e) {
     if (e.which == 13) {
         e.preventDefault();
-        // if(currentLine.text()=== 'rs') {
-        //     ws.close()
-        //     connect('ws://localhost:3000')
-        // }
         history.append(`<span>z164@z164:~$ ${currentLine.text().trim()}</span>`)
         toJSON(currentLine.text().trim())
         currentLine.text(' ')
@@ -50,4 +48,40 @@ const toJSON = (message) => {
         props: props,
         body: body
     }))
+}
+
+const parseMessage = (message) => {
+    const messageData = message.split('|')
+    let [data, props] = messageData
+    let author = ''
+    data = data.trim()
+    if (props) {
+        props = props.trim()
+        props = props.split('--')
+        const propsMap = props.map(el => {
+            const arr = el.split(' ')
+            const [name, ...body] = arr
+            return {
+                name: name,
+                body: body
+            }
+        })
+        propsMap.forEach((el) => {
+            switch (el.name) {
+                case 'name':
+                    if (el.body[0] === 'logout') {
+                        $('.terminal-header').text('Not logged in')
+                    } else {
+                        $('.terminal-header').text(`Currently logged in as [${el.body[0]}]`)
+                    }
+                    break
+                case 'author':
+                    author = el.body[0]
+                    break
+                default:
+                    ''
+            }
+        })
+    }
+    return [data, author]
 }

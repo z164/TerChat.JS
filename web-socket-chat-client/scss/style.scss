@@ -48,7 +48,7 @@ main {
         // border: 10px solid white;
         font-family: 'Ubuntu Mono', monospace;
         min-width: 1000px;
-        
+
         .terminal-header {
             background-color: white;
             color: black;
@@ -71,12 +71,15 @@ main {
             .terminal-content-current {
                 min-width: 100px;
                 caret-color: transparent;
+
                 &:focus {
                     outline: none;
                 }
+
                 &::before {
                     content: 'z164@z164:~$ ';
                 }
+
                 &::after {
                     content: '█';
                     animation: blink 1s step-start infinite reverse;
@@ -85,6 +88,7 @@ main {
         }
     }
 }
+
 
 @keyframes flex {
     33% {
@@ -107,6 +111,7 @@ main {
     50% {
         opacity: 100%;
     }
+
     100% {
         opacity: 0%;
     }

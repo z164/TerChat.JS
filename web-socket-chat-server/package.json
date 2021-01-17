@@ -12,6 +12,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "mongoose": "^5.11.11",
+    "nodemailer": "^6.4.17",
     "ws": "^7.4.2"
   }
 }
