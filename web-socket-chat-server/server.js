@@ -20,7 +20,7 @@ mongoose.connect(process.env.URI, {
     useUnifiedTopology: true,
     useFindAndModify: false
 }, () => {
-    console.log('connected to db')
+    console.log('MongoDB cluster connection established')
 })
 
 // Event listener for connection to server
@@ -120,7 +120,7 @@ const all = (ws, props, body) => {
         return
     }
     server.clients.forEach((el) => {
-        el.send(`${body.join(' ')}| author ${currentUser.data.name}`)
+        el.send(`${body.join(' ')}| author ${currentUser.data.name}--right`)
     })
 }
 

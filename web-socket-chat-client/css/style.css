@@ -42,38 +42,66 @@ main .terminal-wrap {
   flex-direction: column;
   color: white;
   font-family: "Ubuntu Mono", monospace;
-  min-width: 1000px;
+  width: 1000px;
 }
 main .terminal-wrap .terminal-header {
   background-color: white;
   color: black;
   padding: 10px;
   text-align: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 main .terminal-wrap .terminal-content {
   padding: 10px;
   background-color: #3F3F3F;
   height: 400px;
+  display: flex;
+}
+main .terminal-wrap .terminal-content .terminal-content__commands {
+  flex: 1;
   overflow-y: scroll;
 }
-main .terminal-wrap .terminal-content .terminal-content-history span {
+main .terminal-wrap .terminal-content .terminal-content__commands .terminal-content-history span {
   display: block;
 }
-main .terminal-wrap .terminal-content .terminal-content-current {
+main .terminal-wrap .terminal-content .terminal-content__commands .terminal-content-current {
   min-width: 100px;
   caret-color: transparent;
 }
-main .terminal-wrap .terminal-content .terminal-content-current:focus {
+main .terminal-wrap .terminal-content .terminal-content__commands .terminal-content-current:focus {
   outline: none;
 }
-main .terminal-wrap .terminal-content .terminal-content-current::before {
+main .terminal-wrap .terminal-content .terminal-content__commands .terminal-content-current::before {
   content: "z164@z164:~$ ";
 }
-main .terminal-wrap .terminal-content .terminal-content-current::after {
+main .terminal-wrap .terminal-content .terminal-content__commands .terminal-content-current::after {
   content: "█";
   animation: blink 1s step-start infinite reverse;
 }
+main .terminal-wrap .terminal-content .terminal-content__chat {
+  flex: 1;
+  padding-left: 10px;
+  overflow-y: scroll;
+}
+main .terminal-wrap .terminal-content .terminal-content__chat span {
+  display: block;
+  padding: 2px;
+}
 
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+@media (max-width: 1025px) {
+  main .terminal-wrap {
+    width: 300px;
+  }
+  main .terminal-wrap .terminal-content {
+    flex-direction: column-reverse;
+    height: 400px;
+  }
+}
 @keyframes flex {
   33% {
     font-size: 4.5em;

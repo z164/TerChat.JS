@@ -1,7 +1,8 @@
 const currentLine = $('.terminal-content-current')
 const history = $('.terminal-content-history')
 const content = $('.terminal-content')
-
+const chat = $('.terminal-content__chat')
+const commands = $('.terminal-content__commands')
 // Keep current line in terminal always in focus
 $('document').ready(() => {
     currentLine.focus()
@@ -11,7 +12,7 @@ currentLine.on('blur', () => {
 })
 
 // Connection to server and event listeners
-let ws
+let ws, currentUser
 const connect = (url) => {
     ws = new WebSocket(url)
 }
@@ -22,9 +23,14 @@ ws.onerror = (err) => {
 ws.onopen = () => {}
 ws.onmessage = (e) => {
     const message = e.data
-    const [body, author] = parseMessage(message)
-    history.append(`<span>${author === '' ? 'Server' : author}: ${body}</span>`)
-    content.scrollTop(999)
+    const [body, author, side] = parseMessage(message)
+    if (side) {
+        chat.append(`<span ${body.includes(currentUser) && author !== currentUser ? 'style="background-color: #FFFFFF; color: #000000; border-radius: 3px"' : ''}><b>${author === '' ? 'Server' : author}</b>: ${body}</span>`)
+        chat.scrollTop(999)
+    } else {
+        history.append(`<span><b>${author === '' ? 'Server' : author}</b>: ${body}</span>`)
+    }
+    commands.scrollTop(999)
 }
 
 // Enter press event listener
@@ -53,7 +59,8 @@ const toJSON = (message) => {
 const parseMessage = (message) => {
     const messageData = message.split('|')
     let [data, props] = messageData
-    let author = ''
+    let author = '',
+        rightSide = false
     data = data.trim()
     if (props) {
         props = props.trim()
@@ -69,6 +76,7 @@ const parseMessage = (message) => {
         propsMap.forEach((el) => {
             switch (el.name) {
                 case 'name':
+                    currentUser = el.body[0]
                     if (el.body[0] === 'logout') {
                         $('.terminal-header').text('Not logged in')
                     } else {
@@ -78,10 +86,13 @@ const parseMessage = (message) => {
                 case 'author':
                     author = el.body[0]
                     break
+                case 'right':
+                    rightSide = true
+                    break
                 default:
                     ''
             }
         })
     }
-    return [data, author]
+    return [data, author, rightSide]
 }

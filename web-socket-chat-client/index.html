@@ -25,7 +25,7 @@
 <body>
     <header>
         <div class="headline-wrap">
-            <h1>TerChat.js</h1> 
+            <h1>TerChat.js</h1>
         </div>
     </header>
     <main>
@@ -33,11 +33,16 @@
             <div class="terminal-header">
                 Not logged in.
             </div>
-            <div class="terminal-content custom-scroll">
-                <div class="terminal-content-history">Welcome to TerChat.js!</div>
-                <!-- <span class="terminal-content-prefix">z164@z164:~$</span> -->
-                <!-- <input type="text" class="terminal-content-current"> -->
-                <span class="terminal-content-current" contenteditable role="textbox" spellcheck="false"></span>
+            <div class="terminal-content">
+                <div class="terminal-content__commands">
+                    <div class="terminal-content-history">Welcome to TerChat.js!</div>
+                    <!-- <span class="terminal-content-prefix">z164@z164:~$</span> -->
+                    <!-- <input type="text" class="terminal-content-current"> -->
+                    <span class="terminal-content-current" contenteditable role="textbox" spellcheck="false"></span>
+                </div>
+                <div class="terminal-content__chat">
+                    Chat messages gonna appear here!
+                </div>
             </div>
         </div>
     </main>

@@ -45,50 +45,82 @@ main {
         display: flex;
         flex-direction: column;
         color: white;
-        // border: 10px solid white;
         font-family: 'Ubuntu Mono', monospace;
-        min-width: 1000px;
+        width: 1000px;
 
         .terminal-header {
             background-color: white;
             color: black;
             padding: 10px;
             text-align: center;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
         }
 
         .terminal-content {
             padding: 10px;
             background-color: #3F3F3F;
             height: 400px;
-            overflow-y: scroll;
+            display: flex;
 
-            .terminal-content-history {
-                span {
-                    display: block;
+            .terminal-content__commands {
+                flex: 1;
+                overflow-y: scroll;
+
+                .terminal-content-history {
+                    span {
+                        display: block;
+                    }
+                }
+
+                .terminal-content-current {
+                    min-width: 100px;
+                    caret-color: transparent;
+
+                    &:focus {
+                        outline: none;
+                    }
+
+                    &::before {
+                        content: 'z164@z164:~$ ';
+                    }
+
+                    &::after {
+                        content: '█';
+                        animation: blink 1s step-start infinite reverse;
+                    }
                 }
             }
 
-            .terminal-content-current {
-                min-width: 100px;
-                caret-color: transparent;
+            .terminal-content__chat {
+                flex: 1;
+                padding-left: 10px;
+                overflow-y: scroll;
 
-                &:focus {
-                    outline: none;
-                }
-
-                &::before {
-                    content: 'z164@z164:~$ ';
-                }
-
-                &::after {
-                    content: '█';
-                    animation: blink 1s step-start infinite reverse;
+                span {
+                    display: block;
+                    padding: 2px;
                 }
             }
         }
     }
 }
 
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+@media (max-width: 1025px) {
+    main {
+        .terminal-wrap {
+            width: 300px;
+            .terminal-content {
+                flex-direction: column-reverse;
+                height: 400px;
+            }
+        }
+    }
+}
 
 @keyframes flex {
     33% {
