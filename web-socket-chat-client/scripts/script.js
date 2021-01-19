@@ -23,7 +23,10 @@ ws.onerror = (err) => {
 ws.onopen = () => {}
 ws.onmessage = (e) => {
     const message = e.data
-    const [body, author, side] = parseMessage(message)
+    let [body, author, side, whisper] = parseMessage(message)
+    if (whisper) {
+        author = `${author} whispered you`
+    }
     if (side) {
         chat.append(`<span ${body.includes(currentUser) && author !== currentUser ? 'style="background-color: #FFFFFF; color: #000000; border-radius: 3px"' : ''}><b>${author === '' ? 'Server' : author}</b>: ${body}</span>`)
         chat.scrollTop(999)
@@ -57,14 +60,15 @@ const toJSON = (message) => {
 }
 
 const parseMessage = (message) => {
-    const messageData = message.split('|')
-    let [data, props] = messageData
+    const messageData = JSON.parse(message)
+    let {
+        body,
+        props
+    } = messageData
     let author = '',
+        whisper = false,
         rightSide = false
-    data = data.trim()
     if (props) {
-        props = props.trim()
-        props = props.split('--')
         const propsMap = props.map(el => {
             const arr = el.split(' ')
             const [name, ...body] = arr
@@ -78,7 +82,7 @@ const parseMessage = (message) => {
                 case 'name':
                     currentUser = el.body[0]
                     if (el.body[0] === 'logout') {
-                        $('.terminal-header').text('Not logged in')
+                        $('.terminal-header').text('Not logged in.')
                     } else {
                         $('.terminal-header').text(`Currently logged in as [${el.body[0]}]`)
                     }
@@ -89,10 +93,13 @@ const parseMessage = (message) => {
                 case 'right':
                     rightSide = true
                     break
+                case 'whisper':
+                    whisper = true
+                    break
                 default:
                     ''
             }
         })
     }
-    return [data, author, rightSide]
+    return [body, author, rightSide, whisper]
 }

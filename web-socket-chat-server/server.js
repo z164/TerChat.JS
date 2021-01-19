@@ -2,7 +2,7 @@ const ws = require('ws');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const email = require('./my_modules/email');
-const validate = require('./my_modules/validation');
+const utility = require('./my_modules/utility');
 const User = require('./DataBase/User');
 
 dotenv.config();
@@ -12,7 +12,7 @@ const server = new ws.Server({
 })
 
 // Array to differentiate clients
-const LoggedClients = []
+let LoggedClients = [] // BRING IT BACK TO CONST !!!!
 
 // Connection to MongoDB
 mongoose.connect(process.env.URI, {
@@ -25,9 +25,9 @@ mongoose.connect(process.env.URI, {
 
 // Event listener for connection to server
 server.on('connection', (ws) => {
-    ws.send(`Connected to server.`)
-    ws.send(`To login use 'login NAME PASSWORD' command.`)
-    ws.send(`To sign up use 'register' command.`)
+    ws.send(toJSON('Connected to server'))
+    ws.send(toJSON('To login use "login NAME PASSWORD" command.'))
+    ws.send(toJSON('To register use "register EMAIL NAME PASSWORD" command.'))
     ws.on('message', (message) => {
         parseCommand(message, ws)
     })
@@ -76,7 +76,7 @@ const register = (ws, props, body) => {
         if (err) {
             console.error(err);
         } else {
-            ws.send('User created succesfully. Please confirm your email before you can use all the features of TerChat')
+            ws.send(toJSON('User created succesfully. Please confirm your email before you can use all the features of TerChat'))
         }
     })
 }
@@ -91,7 +91,7 @@ const login = (ws, props, body) => {
             console.error(err)
         }
         if (res.length === 0) {
-            ws.send('Failure')
+            ws.send(toJSON('Failure'))
             return
         }
         // Pushing websocket and user info from mongoDB to array of current clients
@@ -99,41 +99,52 @@ const login = (ws, props, body) => {
             socket: ws,
             data: res[0]
         })
-        ws.send(`Succesfully logged in! | name ${name}--check`)
+        ws.send(toJSON('Succesfully logged in!',[`name ${name}`]))
+        server.clients.forEach(el => el.send(toJSON(`${name} has joined the chat!`, ['right'])))
+        ws.on('close', () => {
+            const name = utility.getNameFromSocket(LoggedClients, ws)
+            server.clients.forEach(el => el.send(toJSON(`${name} had left us!`, ['right'])))
+            LoggedClients = utility.popFromArrayByName(LoggedClients, name) /// BRING IT BACK TO CONST!!!! (OPTIONALY :) )
+        })
     })
 }
-
 const logout = (ws, props, body) => {
     const index = LoggedClients.findIndex(el => el.socket === ws)
     LoggedClients.splice(index, 1)
-    ws.send('Logged out | name logout')
+    ws.send(toJSON('Logged out', ['name logout']))
+    // server.clients.forEach(el => {
+    //     el.send(toJSON(`${utility.getNameFromSocket(LoggedClients, ws)} had left us!`, ['right']))
+    // })
 }
 
 const all = (ws, props, body) => {
-    const [ currentUser ]  = validate.loginCheck(LoggedClients, ws)
+    const [ currentUser ]  = utility.loginCheck(LoggedClients, ws)
     if (!currentUser) {
-        ws.send(`Please, use login / register command first!`)
+        ws.send(toJSON('Please, use login / register command first!'))
         return
     }
-    if(!validate.activationCheck(currentUser)) {
-        ws.send('Please, activate your account before you can use this command')
+    if(!utility.activationCheck(currentUser)) {
+        ws.send(toJSON('Please, activate your account before you can use this command'))
         return
     }
     server.clients.forEach((el) => {
-        el.send(`${body.join(' ')}| author ${currentUser.data.name}--right`)
+        el.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right']))
     })
 }
 
 const w = (ws, props, body) => {
-    const [currentUser, currentUserIndex] = validate.loginCheck(LoggedClients, ws)
-    
-    
+    const [currentUser, currentUserIndex] = utility.loginCheck(LoggedClients, ws)
+    const cutProps = props.map(el => el.slice(2))
+    cutProps.forEach(el => {
+        const socket = utility.getSocketFromName(LoggedClients, el)
+        socket.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right', 'whisper']))
+    })
 }
 
 const activate = (ws, props, body) => {
-    const [currentUser, currentUserIndex] = validate.loginCheck(LoggedClients, ws)
+    const [currentUser, currentUserIndex] = utility.loginCheck(LoggedClients, ws)
     if (!currentUser) {
-        ws.send(`Please, use login / register command first!`)
+        ws.send(toJSON('Please, use login / register command first!'))
         return
     }
     if (props.includes('--request') && !currentUser.data.verified) { // If prop --request is passed, a random 5 digit code is generated and sent it to user's, email
@@ -147,8 +158,15 @@ const activate = (ws, props, body) => {
                 if(err) {
                     console.error(err)
                 }
-                ws.send('Your account was activated!')
+                ws.send(toJSON('Your account was activated!'))
             })
         }
     }
+}
+
+const toJSON = (body, props) => {
+    return JSON.stringify({
+        body: body,
+        props: props
+    })
 }

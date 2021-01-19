@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 dotenv.config()
 
-const makeid = (length) => {
+const codeGenerator = (length) => {
     let result = '';
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let charactersLength = characters.length;
@@ -16,7 +16,7 @@ const makeid = (length) => {
 
 const email = (name, email) => {
 
-    const code = makeid(5)
+    const code = codeGenerator(5)
     const result = `<h1>Hello, ${name}</h1>
     <p>Your confirmation code from <strong>TerChat.js</strong> is ${code}</p>`
 
