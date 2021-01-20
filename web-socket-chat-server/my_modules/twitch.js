@@ -3,7 +3,7 @@ const tmi = require('tmi.js')
 
 dotenv.config()
 
-const init = (channels) => {
+const init = (channels, ws) => {
     const opts = {
         identity: {
             username: process.env.TWITCH_USER,
@@ -14,15 +14,11 @@ const init = (channels) => {
         ]
     };
     const client = new tmi.Client(opts)
-    client.on('message', messageHandler)
+    client.on('message', (target, context, message, self) => {
+        ws.send(toJSON(`[${target.slice(1)}] ${context.username}: ${message}`));
+    })
     client.connect()
 }
-
-const messageHandler = (target, context, message, self) => {
-    if(self) {
-        return
-    }
-    console.log(`[${target.slice(1)}] ${context.username}: ${message}`);
+module.exports = {
+    init
 }
-
-init(['alohadancetv'])

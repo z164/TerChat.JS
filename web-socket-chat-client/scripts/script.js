@@ -24,8 +24,10 @@ ws.onopen = () => {}
 ws.onmessage = (e) => {
     const message = e.data
     let [body, author, side, whisper] = parseMessage(message)
+    const whisperSound = new Audio('./sound/whisper.ogg')
     if (whisper) {
         author = `${author} whispered you`
+        whisperSound.play()
     }
     if (side) {
         chat.append(`<span ${body.includes(currentUser) && author !== currentUser ? 'style="background-color: #FFFFFF; color: #000000; border-radius: 3px"' : ''}><b>${author === '' ? 'Server' : author}</b>: ${body}</span>`)

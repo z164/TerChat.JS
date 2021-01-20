@@ -1,5 +1,6 @@
 const ws = require('ws');
 const mongoose = require('mongoose');
+const moment = require('moment')
 const dotenv = require('dotenv');
 const email = require('./my_modules/email');
 const utility = require('./my_modules/utility');
@@ -41,27 +42,38 @@ const parseCommand = (message, ws) => {
 
     const messageJSON = JSON.parse(message)
     console.log(messageJSON)
-    switch (messageJSON.command) {
+    const {
+        command,
+        props,
+        body
+    } = messageJSON
+    switch (command) {
         case 'login':
-            login(ws, messageJSON.props, messageJSON.body);
+            login(ws, props, body);
             break;
         case 'register':
-            register(ws, messageJSON.props, messageJSON.body);
+            register(ws, props, body);
             break;
         case 'logout':
-            logout(ws, messageJSON.props, messageJSON.body);
+            logout(ws, props, body);
             break;
         case 'activate':
-            activate(ws, messageJSON.props, messageJSON.body);
+            activate(ws, props, body);
             break;
         case 'all':
-            all(ws, messageJSON.props, messageJSON.body);
+            all(ws, props, body);
             break;
         case 'w':
-            w(ws, messageJSON.props, messageJSON.body);
+            w(ws, props, body);
+            break;
+        case 'online':
+            online(ws, props, body);
+            break;
+        case 'info':
+            info(ws, props, body);
             break;
         default:
-            ws.send(`${messageJSON.command}: command not found`)
+            ws.send(toJSON(`${command}: command not found`))
             break;
     }
 }
@@ -76,12 +88,17 @@ const register = (ws, props, body) => {
         if (err) {
             console.error(err);
         } else {
-            ws.send(toJSON('User created succesfully. Please confirm your email before you can use all the features of TerChat'))
+            ws.send(toJSON('User created successfully. Please confirm your email before you can use all the features of TerChat'))
         }
     })
 }
 
 const login = (ws, props, body) => {
+    const [currentUser] = utility.loginCheck(LoggedClients, ws)
+    if (currentUser) {
+        ws.send(toJSON('You are already logged in. Use logout command to switch to another account'))
+        return
+    }
     const [name, password] = body
     User.find({
         name: name,
@@ -99,7 +116,7 @@ const login = (ws, props, body) => {
             socket: ws,
             data: res[0]
         })
-        ws.send(toJSON('Succesfully logged in!',[`name ${name}`]))
+        ws.send(toJSON('Successfully logged in!', [`name ${name}`]))
         server.clients.forEach(el => el.send(toJSON(`${name} has joined the chat!`, ['right'])))
         ws.on('close', () => {
             const name = utility.getNameFromSocket(LoggedClients, ws)
@@ -109,21 +126,26 @@ const login = (ws, props, body) => {
     })
 }
 const logout = (ws, props, body) => {
+    const [currentUser] = utility.loginCheck(LoggedClients, ws)
+    if (!currentUser) {
+        ws.send(toJSON('You are not logged in!'))
+        return
+    }
     const index = LoggedClients.findIndex(el => el.socket === ws)
     LoggedClients.splice(index, 1)
     ws.send(toJSON('Logged out', ['name logout']))
-    // server.clients.forEach(el => {
-    //     el.send(toJSON(`${utility.getNameFromSocket(LoggedClients, ws)} had left us!`, ['right']))
-    // })
+    server.clients.forEach(el => {
+        el.send(toJSON(`${currentUser.data.name} had left us!`, ['right']))
+    })
 }
 
 const all = (ws, props, body) => {
-    const [ currentUser ]  = utility.loginCheck(LoggedClients, ws)
+    const [currentUser] = utility.loginCheck(LoggedClients, ws)
     if (!currentUser) {
         ws.send(toJSON('Please, use login / register command first!'))
         return
     }
-    if(!utility.activationCheck(currentUser)) {
+    if (!utility.activationCheck(currentUser)) {
         ws.send(toJSON('Please, activate your account before you can use this command'))
         return
     }
@@ -153,14 +175,38 @@ const activate = (ws, props, body) => {
         LoggedClients.splice(currentUserIndex, 1, currentUser) // Item gets overwritten in LoggedClients array
         return
     } else if (props.includes('--confirm')) { // When confirm prop is recieved code should appear in body of command
-        if(currentUser.code === body[0]) { // If body recieved is equal to currentUser's code, then user is verified
-            User.findOneAndUpdate({ _id: currentUser.data._id }, { verified: true }, (err,res) =>{
-                if(err) {
+        if (currentUser.code === body[0]) { // If body recieved is equal to currentUser's code, then user is verified
+            User.findOneAndUpdate({
+                _id: currentUser.data._id
+            }, {
+                verified: true
+            }, (err, res) => {
+                if (err) {
                     console.error(err)
                 }
                 ws.send(toJSON('Your account was activated!'))
             })
         }
+    }
+}
+
+const online = (ws, props, body) => {
+    let res = []
+    LoggedClients.forEach(el => res.push(el.data.name))
+    const count = res.length
+    res = `<br>${res.join('<br>')}`
+    ws.send(toJSON(`Users online - ${count}${res}`))
+}
+
+const info = (ws, props, body) => {
+    const [currentUser] = utility.loginCheck(LoggedClients, ws)
+    if(props.includes('--show')) {
+        const {permissions, verified, date, _id, email, name, password} = currentUser.data
+        ws.send(toJSON(`Name: ${name}`))        
+        ws.send(toJSON(`Email: ${email}`))
+        ws.send(toJSON(`Verified: ${verified}`))
+        ws.send(toJSON(`Permissions: ${permissions}`))
+        ws.send(toJSON(`Registration date: ${moment(date).format('MMMM, DD, YYYY')} (${moment(date).fromNow()})`))
     }
 }
 
