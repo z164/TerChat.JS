@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: 'User'
     },
-    // messages: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Message'
-    // }],
     verified: {
         type: Boolean,
         default: false
