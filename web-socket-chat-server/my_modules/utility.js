@@ -14,7 +14,6 @@ const getSocketFromName = (LoggedClients, name) => {
 }
 const getNameFromSocket = (LoggedClients, ws) => {
     const user = LoggedClients.find(el => el.socket === ws)
-    console.log(user)
     if(user) {
         return user.data.name
     }
@@ -22,10 +21,20 @@ const getNameFromSocket = (LoggedClients, ws) => {
 const popFromArrayByName = (LoggedClients, name) => {
     return LoggedClients.filter(el => el.data.name !== name)
 }
+const isUserBanned = (currentUser) => {
+
+}
+
+const isAdmin = (currentUser) => {
+    console.log(currentUser.data.permissions)
+    return !currentUser.data.permissions === 'Admin'
+}
 module.exports = {
     loginCheck,
     activationCheck,
     getSocketFromName,
     getNameFromSocket,
-    popFromArrayByName
+    popFromArrayByName,
+    isUserBanned,
+    isAdmin
 }

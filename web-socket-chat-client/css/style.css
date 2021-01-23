@@ -87,6 +87,7 @@ main .terminal-wrap .terminal-content .terminal-content__chat {
 main .terminal-wrap .terminal-content .terminal-content__chat span {
   display: block;
   padding: 2px;
+  margin-bottom: 2px;
 }
 
 ::-webkit-scrollbar {

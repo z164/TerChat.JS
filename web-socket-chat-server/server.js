@@ -5,6 +5,8 @@ const dotenv = require('dotenv');
 const email = require('./my_modules/email');
 const utility = require('./my_modules/utility');
 const User = require('./DataBase/User');
+const Message = require('./DataBase/Message')
+const Ban = require('./DataBase/Ban')
 
 dotenv.config();
 
@@ -29,6 +31,7 @@ server.on('connection', (ws) => {
     ws.send(toJSON('Connected to server'))
     ws.send(toJSON('To login use "login NAME PASSWORD" command.'))
     ws.send(toJSON('To register use "register EMAIL NAME PASSWORD" command.'))
+    createHistory(ws)
     ws.on('message', (message) => {
         parseCommand(message, ws)
     })
@@ -71,6 +74,9 @@ const parseCommand = (message, ws) => {
             break;
         case 'info':
             info(ws, props, body);
+            break;
+        case 'ban':
+            ban(ws, props, body);
             break;
         default:
             ws.send(toJSON(`${command}: command not found`))
@@ -141,6 +147,8 @@ const logout = (ws, props, body) => {
 
 const all = (ws, props, body) => {
     const [currentUser] = utility.loginCheck(LoggedClients, ws)
+    const date = Date.now()
+    let isBanned = false
     if (!currentUser) {
         ws.send(toJSON('Please, use login / register command first!'))
         return
@@ -149,9 +157,41 @@ const all = (ws, props, body) => {
         ws.send(toJSON('Please, activate your account before you can use this command'))
         return
     }
-    server.clients.forEach((el) => {
-        el.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right']))
+    Ban.findOne({
+        user: currentUser.data._id
+    }).then((ban) => {
+        if (!ban) {
+            return;
+        }
+        if (ban.dateOfExpiration > Date.now()) {
+            isBanned = true
+            const ms = moment(ban.dateOfExpiration).diff(moment(new Date))
+            const date = moment(ms)
+            ws.send(toJSON(`You are banned for ${date.format('mm:ss')}<br>This means your ban will expire at <b>${moment(ban.dateOfExpiration).format('MMMM, DD, HH:mm')}</b>`))
+        } else {
+            Ban.findByIdAndDelete(ban._id, (err, res) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+        }
+        if (isBanned) {
+            return
+        }
+        Message.create({
+            user: currentUser.data._id,
+            message: body.join(' '),
+            date: date
+        }, (err) => {
+            if (err) {
+                console.error(err)
+            }
+        })
+        server.clients.forEach((el) => {
+            el.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right', `time ${moment(date).format('HH, mm')}`]))
+        })
     })
+
 }
 
 const w = (ws, props, body) => {
@@ -159,7 +199,11 @@ const w = (ws, props, body) => {
     const cutProps = props.map(el => el.slice(2))
     cutProps.forEach(el => {
         const socket = utility.getSocketFromName(LoggedClients, el)
-        socket.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right', 'whisper']))
+        if (!socket) {
+            ws.send(toJSON(`User you mentioned is either offline or does not exist`))
+            return
+        }
+        socket.send(toJSON(`${body.join(' ')}`, [`author ${currentUser.data.name}`, 'right', 'whisper', `time ${moment(Date.now()).format('HH, mm')}`]))
     })
 }
 
@@ -200,9 +244,17 @@ const online = (ws, props, body) => {
 
 const info = (ws, props, body) => {
     const [currentUser] = utility.loginCheck(LoggedClients, ws)
-    if(props.includes('--show')) {
-        const {permissions, verified, date, _id, email, name, password} = currentUser.data
-        ws.send(toJSON(`Name: ${name}`))        
+    if (props.includes('--show')) {
+        const {
+            permissions,
+            verified,
+            date,
+            _id,
+            email,
+            name,
+            password
+        } = currentUser.data
+        ws.send(toJSON(`Name: ${name}`))
         ws.send(toJSON(`Email: ${email}`))
         ws.send(toJSON(`Verified: ${verified}`))
         ws.send(toJSON(`Permissions: ${permissions}`))
@@ -214,5 +266,49 @@ const toJSON = (body, props) => {
     return JSON.stringify({
         body: body,
         props: props
+    })
+}
+
+const createHistory = (ws) => {
+    Message.find({})
+        .populate('user')
+        .exec((err, message) => {
+            if (err) {
+                return console.error(err)
+            }
+            message.forEach(el => {
+                const fullTime = moment(el.date).format('MMMM, DD, HH, mm')
+                const hoursAndMinutes = moment(el.date).format('HH, mm')
+                const condition = moment(el.date).format('MMMM, DD, YYYY') === moment(Date.now()).format('MMMM, DD, YYYY')
+                ws.send(toJSON(el.message, [`author ${el.user.name}`, 'right', `time ${ condition ? hoursAndMinutes : fullTime }`]))
+            })
+        })
+}
+
+const ban = (ws, props, body) => {
+    const [currentUser] = utility.loginCheck(LoggedClients, ws)
+    if (!currentUser) {
+        ws.send(toJSON('Please, use login / register command first!'))
+        return
+    }
+    if (utility.isAdmin(currentUser)) {
+        ws.send(toJSON('You have no permissions to use this command'))
+        return
+    }
+    const cutProps = props.map(el => el.slice(2))
+    const dateOfExpiration = new Date()
+    dateOfExpiration.set
+    cutProps.forEach(el => {
+        User.findOne({
+            name: el
+        }, (err, user) => {
+            Ban.create({
+                user: user._id,
+            }, (err) => {
+                if (err) {
+                    console.error(err)
+                }
+            })
+        })
     })
 }
