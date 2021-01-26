@@ -14,6 +14,7 @@ const logout = require('./my_modules/commands/logout')
 const online = require('./my_modules/commands/online')
 const register = require('./my_modules/commands/register')
 const w = require('./my_modules/commands/w')
+const twitch = require('./my_modules/commands/twitch')
 
 dotenv.config();
 
@@ -84,7 +85,10 @@ const parseCommand = (message, ws) => {
         case 'ban':
             ban(LoggedClients, ws, props, body);
             break;
-        default:    
+        case 'twitch':
+            twitch(LoggedClients, ws, props, body);
+            break;
+        default:
             ws.send(toJSON(`${command}: command not found`))
             break;
     }

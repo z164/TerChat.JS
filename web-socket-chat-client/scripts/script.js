@@ -35,11 +35,11 @@ ws.onmessage = (e) => {
         const isMessageFromServer = author === ''
         const spanOfTime = `<span style="float:right">${time}</span>`
         chat.append(`<span ${isUserMentioned ? highlightMessage : ''}><b>${spanOfTime}${isMessageFromServer ? 'Server' : `${author}`}</b>:<br>${body}</span>`)
-        chat.scrollTop(9999)
+        chat.scrollTop(99999)
     } else {
         history.append(`<span><b>${author === '' ? 'Server' : author}</b>: ${body}</span>`)
     }
-    commands.scrollTop(999)
+    commands.scrollTop(99999)
 }
 
 // Enter press event listener
@@ -118,6 +118,10 @@ const parseMessage = (message) => {
                     ''
             }
         })
+    }
+    if (body) {
+        body = body.replaceAll('LUL', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/425618/1.0">')
+        body = body.replaceAll('BloodTrail', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/69/1.0"')
     }
     return [body, author, rightSide, whisper, time]
 }

@@ -1,6 +1,8 @@
 const dotenv = require('dotenv');
 const tmi = require('tmi.js')
 
+const toJSON = require('./toJSON')
+
 dotenv.config()
 
 const init = (channels, ws) => {
@@ -15,7 +17,7 @@ const init = (channels, ws) => {
     };
     const client = new tmi.Client(opts)
     client.on('message', (target, context, message, self) => {
-        ws.send(toJSON(`[${target.slice(1)}] ${context.username}: ${message}`));
+        ws.send(toJSON(`${context.username}: ${message}`, [`author ${target.slice(1)}`]));
     })
     client.connect()
 }
