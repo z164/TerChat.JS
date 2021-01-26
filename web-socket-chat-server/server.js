@@ -25,6 +25,8 @@ const server = new ws.Server({
 // Array to differentiate clients
 let LoggedClients = [] // BRING IT BACK TO CONST !!!!
 
+const TwitchClients = []
+
 // Connection to MongoDB
 mongoose.connect(process.env.URI, {
     useNewUrlParser: true,
@@ -86,7 +88,10 @@ const parseCommand = (message, ws) => {
             ban(LoggedClients, ws, props, body);
             break;
         case 'twitch':
-            twitch(LoggedClients, ws, props, body);
+            TwitchClients.push(twitch(LoggedClients, ws, props, body, TwitchClients))
+            break;
+        case 'doabarrelroll':
+            ws.send(toJSON(`DoAbArReLrOlL`, ['barrel']))
             break;
         default:
             ws.send(toJSON(`${command}: command not found`))

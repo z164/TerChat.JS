@@ -114,14 +114,20 @@ const parseMessage = (message) => {
                         time = `${month} ${day.slice(0,2)} | ${hours.slice(0,2)}:${minutes}`
                     }
                     break
+                case 'barrel':
+                    $('.terminal-wrap').addClass('rick-roll')
+                    setTimeout(() => {
+                        $('.terminal-wrap').removeClass('rick-roll')
+                    }, 2500)
+                    break
                 default:
                     ''
             }
         })
     }
     if (body) {
-        body = body.replaceAll('LUL', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/425618/1.0">')
-        body = body.replaceAll('BloodTrail', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/69/1.0"')
+        // body = body.replaceAll('LUL', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/425618/1.0">')
+        // body = body.replaceAll('BloodTrail', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/69/1.0"')
     }
     return [body, author, rightSide, whisper, time]
 }

@@ -20,6 +20,10 @@ const init = (channels, ws) => {
         ws.send(toJSON(`${context.username}: ${message}`, [`author ${target.slice(1)}`]));
     })
     client.connect()
+        .then(() => {
+            ws.send(toJSON('Twitch client connected, translating messages from twitch chat to TerChat!'))
+        })
+    return client
 }
 module.exports = {
     init
