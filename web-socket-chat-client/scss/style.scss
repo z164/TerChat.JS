@@ -149,3 +149,17 @@ main {
         opacity: 0%;
     }
 }
+
+.rick-roll {
+    animation: rick-roll 1s linear;
+    // animation: name duration timing-function delay iteration-count direction fill-mode;
+}
+
+@keyframes rick-roll {
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

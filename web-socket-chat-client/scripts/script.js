@@ -126,8 +126,13 @@ const parseMessage = (message) => {
         })
     }
     if (body) {
-        // body = body.replaceAll('LUL', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/425618/1.0">')
-        // body = body.replaceAll('BloodTrail', '<img src="https://static-cdn.jtvnw.net/emoticons/v1/69/1.0"')
+        body = body.split('LUL').join('<img src="https://static-cdn.jtvnw.net/emoticons/v1/425618/1.0">')
+        body = body.split('BloodTrail').join('<img src="https://static-cdn.jtvnw.net/emoticons/v1/69/1.0">')
+        body = body.split('catJAM').join('<img src="https://cdn.betterttv.net/emote/5f1b0186cf6d2144653d2970/1x">')
+        body = body.split('ratJAM').join('<img src="https://cdn.betterttv.net/emote/600bb77df1cfbf65dbe0858a/1x">')
+        body = body.split('monkaS').join('<img src="https://cdn.betterttv.net/emote/56e9f494fff3cc5c35e5287e/1x">')
+        body = body.split('Madge').join('<img src="https://cdn.betterttv.net/emote/5f974a206f583802e389cbc7/1x">')
+        body = body.split('Sadge').join('<img src="https://cdn.betterttv.net/emote/5e0fa9d40550d42106b8a489/1x">')
     }
     return [body, author, rightSide, whisper, time]
 }

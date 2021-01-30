@@ -125,3 +125,15 @@ main .terminal-wrap .terminal-content .terminal-content__chat span {
     opacity: 0%;
   }
 }
+.rick-roll {
+  animation: rick-roll 1s linear;
+}
+
+@keyframes rick-roll {
+  50% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
